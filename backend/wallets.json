@@ -1,0 +1,95 @@
+{
+  "adam": {
+    "coins": [
+      {
+        "id": 50433,
+        "privateKey": "U2FsdGVkX1+UU0VakZdqhmSs03U9GriylbhVyla2lC8W5K7vOF9DsRDpC672LNdIaPUP1TbFOaukFMxxHJx41o4Q7/ujkjDIaYCXIi1WuOoKOXECvLmN/H57wRK9BHT6"
+      },
+      {
+        "id": 50443,
+        "privateKey": "U2FsdGVkX19T4OWV0R0gek9QCOft/HYGPFo5iGXsmd/mhWxWvoTSItz4hhC3p2Xb0BF54yxoWAuV1V20+sjrShu3ARPEw7BB2/GW/aVdGKJtFyE358Dk9dzfpp4IL6Hs"
+      }
+    ],
+    "transactionRecord": [
+      {
+        "amount": -0.5,
+        "id": 50434,
+        "height": 2
+      },
+      {
+        "amount": -0.6,
+        "id": 50435,
+        "height": 2
+      },
+      {
+        "amount": -0.5,
+        "id": 50438,
+        "height": 2
+      },
+      {
+        "amount": -0.5,
+        "id": 50441,
+        "height": 2
+      },
+      {
+        "amount": -0.5,
+        "id": 50442,
+        "height": 2
+      },
+      {
+        "amount": 1.5,
+        "id": 50443,
+        "height": 2
+      }
+    ],
+    "currentTx": null,
+    "password": "f3772b9d9e0a7408fbdc624ea4ef874f49f4a882e02edc1d622550aa6b992ef2"
+  },
+  "adam2": {
+    "coins": [
+      {
+        "id": 50442,
+        "privateKey": "U2FsdGVkX19w9OElAdUY+9Tkf5KFFLBt9RCJ0vcyZFb8kM6+RrhgPkr03DnKAn3P3vr8QHZjFWRH4qL54xsw4ib11c4LsdvX11bGs+9IqKPNGaeyQddaRijfesqsPzZg"
+      }
+    ],
+    "transactionRecord": [
+      {
+        "amount": 0.5,
+        "id": 50434,
+        "height": 2
+      },
+      {
+        "amount": 0.6,
+        "id": 50435,
+        "height": 2
+      },
+      {
+        "amount": 0.5,
+        "id": 50438,
+        "height": 2
+      },
+      {
+        "amount": 0.5,
+        "id": 50441,
+        "height": 2
+      },
+      {
+        "amount": -9,
+        "id": 50440,
+        "height": 2
+      },
+      {
+        "amount": 0.5,
+        "id": 50442,
+        "height": 2
+      },
+      {
+        "amount": -1.5,
+        "id": 50443,
+        "height": 2
+      }
+    ],
+    "currentTx": null,
+    "password": "f3772b9d9e0a7408fbdc624ea4ef874f49f4a882e02edc1d622550aa6b992ef2"
+  }
+}
