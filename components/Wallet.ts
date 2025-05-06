@@ -4,8 +4,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import CryptoJS from "crypto-es";
 
+let reloadedWallet: Wallet | null = null;
+
+setInterval(() => reloadedWallet = null, 8000);
+
 export default async function loadWallet(): Promise<null | Wallet> {
   try {
+    if (reloadedWallet) return reloadedWallet;
     console.log("Fetching wallet...");
     const isWeb = Platform.OS === "web";
     let session: string | null = isWeb ? localStorage.getItem("session") : await AsyncStorage.getItem("session");
@@ -28,6 +33,7 @@ export default async function loadWallet(): Promise<null | Wallet> {
       wallet.coins[i].privateKey = await decryptAES(coin.privateKey, key);
     }));
 
+    reloadedWallet = JSON.parse(JSON.stringify(wallet));
     return wallet;
   } catch (e: any) {
     console.log("[ERROR] Fetch to get wallet: " + e.message);
@@ -37,6 +43,7 @@ export default async function loadWallet(): Promise<null | Wallet> {
 
 export async function saveWallet(wallet: Wallet): Promise<string | null> {
   try {
+    reloadedWallet = null;
     console.log("Saving wallet...");
     const isWeb = Platform.OS === "web";
     let session: string | null = isWeb ? localStorage.getItem("session") : await AsyncStorage.getItem("session");

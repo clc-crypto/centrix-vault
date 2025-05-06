@@ -2,12 +2,8 @@
   "adam": {
     "coins": [
       {
-        "id": 50433,
-        "privateKey": "U2FsdGVkX1+UU0VakZdqhmSs03U9GriylbhVyla2lC8W5K7vOF9DsRDpC672LNdIaPUP1TbFOaukFMxxHJx41o4Q7/ujkjDIaYCXIi1WuOoKOXECvLmN/H57wRK9BHT6"
-      },
-      {
         "id": 50443,
-        "privateKey": "U2FsdGVkX19T4OWV0R0gek9QCOft/HYGPFo5iGXsmd/mhWxWvoTSItz4hhC3p2Xb0BF54yxoWAuV1V20+sjrShu3ARPEw7BB2/GW/aVdGKJtFyE358Dk9dzfpp4IL6Hs"
+        "privateKey": "U2FsdGVkX186AjU/en1yut6h45Ptgc7HglgjMnrxoWB4wOxFLQCtshcbNVKYI7trRMnxEKA61+sS4J03wMccglLIb565+2RE8Twxa8Wjep5C2qLjfNfC//z8PCVqmpBe"
       }
     ],
     "transactionRecord": [

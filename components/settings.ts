@@ -1,4 +1,4 @@
 export default {
-  walletServer: "http://192.168.0.125:3000",
-  centrixServer: "https://clc.ix.tc"
+  walletServer: "https://read.centrix.fi:5000",
+  centrixServer: "https://master.centrix.fi"
 } as const;
