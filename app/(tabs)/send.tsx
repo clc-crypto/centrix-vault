@@ -16,8 +16,9 @@ import { router } from "expo-router";
 import Texts from "@/components/Texts";
 import { Colors, Standards } from "@/components/Theme";
 import { Camera, CameraView } from 'expo-camera';
-import Icon from "react-native-vector-icons/Ionicons";
+import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 import CentrixClient from "centrix-sdk";
 const cc = new CentrixClient();
@@ -37,18 +38,14 @@ export default function Send() {
 
   useEffect(() => {
     if (!amount) return;
-    // Replace comma with dot for decimal point
-    let cleaned = amount.replace(/[^0-9,\.]/g, ''); 
-    cleaned = cleaned.replace(',', '.'); // Change first comma to dot if present
-    const parts = cleaned.split('.'); 
-    
-    // If there are multiple dots (or commas), keep only the first one
+    let cleaned = amount.replace(/[^0-9,\.]/g, '');
+    cleaned = cleaned.replace(',', '.');
+    const parts = cleaned.split('.');
     if (parts.length > 2) {
       cleaned = parts[0] + '.' + parts.slice(1).join('');
     }
-    
     setAmount(cleaned);
-  }, [amount]);  
+  }, [amount]);
 
   const styles = StyleSheet.create({
     all: {
@@ -60,7 +57,7 @@ export default function Send() {
       width: Dimensions.get("window").width > 900 ? "30%" : "70%",
       height: 100,
       fontSize: 40,
-      fontWeight: 700,
+      fontWeight: "700",
       borderBottomColor: Colors.primary,
       borderBottomWidth: 3,
       textAlign: "center",
@@ -86,7 +83,7 @@ export default function Send() {
       borderBottomColor: Colors.primary,
       borderBottomWidth: 3,
       textAlign: "center",
-      fontWeight: 700,
+      fontWeight: "700",
     },
     addressGroup: {
       display: "flex",
@@ -110,29 +107,44 @@ export default function Send() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (Platform.OS !== "web" || !scanning) return;
+
+    const scanner = new Html5QrcodeScanner("reader", {
+      fps: 10,
+      qrbox: 250
+    }, true);
+
+    scanner.render(
+      (decodedText: string) => {
+        setReceiver(decodedText);
+        setScanning(false);
+        scanner.clear();
+      },
+      (error: string) => {}
+    );
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, [scanning]);
+
   async function splitCoins() {
-    if (!wallet) return;
-    if (!amount) return;
-    if (id) return;
+    if (!wallet || !amount || id) return;
 
     let wal = await loadWallet();
-
     if (!wal) return setError("Could not fetch wallet!");
 
     while (wal.coins.length > 1) {
       const coin = wal.coins[0];
       const coinTo = wal.coins[1];
-      console.log("Merge " + coin.id + " into " + coinTo.id);
-      console.log(JSON.stringify(wal.coins, null, 2));
-      if (!coin) break;
-      if (!coinTo) break;
+      if (!coin || !coinTo) break;
 
       const originCoin = await cc.getCoin(coin.id);
       if (typeof originCoin === "string") return setError(originCoin);
 
       const mergeErr = await cc.merge(coin.id, coinTo.id, originCoin.val, coin.privateKey);
-
-      if (mergeErr) return setError(mergeErr + "Please emergency save wallet: " + wal + " and report to the centrix development team.");
+      if (mergeErr) return setError(mergeErr + "Please emergency save wallet and report to the centrix development team.");
       wal.coins.shift();
     }
 
@@ -140,7 +152,6 @@ export default function Send() {
     if (err) setError(err);
 
     const w = await loadWallet();
-    console.log("Wallet to split:", w);
     if (!w) return setError("Could not load wallet!");
     setWallet(w);
 
@@ -148,18 +159,11 @@ export default function Send() {
       const dCoin = await cc.getCoin(coin.id);
       if (typeof dCoin === "string") return setError(dCoin);
       if (dCoin.val < parseFloat(amount)) continue;
-      
       if (dCoin.val === parseFloat(amount)) return setId(coin.id);
 
-      console.log("Splitting coin #" + coin.id);
       const splitRes = await cc.split(coin.id, parseFloat(amount), coin.privateKey);
       if (typeof splitRes === "string") return setError(splitRes);
-      w.coins.push(
-        {
-          id: splitRes,
-          privateKey: coin.privateKey
-        }
-      );
+      w.coins.push({ id: splitRes, privateKey: coin.privateKey });
 
       const err = await saveWallet(w);
       if (err) setError(err);
@@ -167,30 +171,24 @@ export default function Send() {
       setId(splitRes);
       setWallet(w);
       return;
-    } 
+    }
     setNotEnoughFunds(true);
   }
 
   async function send() {
-    if (!id) return;
-    if (!amount) return;
-    if (!receiver) return;
+    if (!id || !amount || !receiver) return;
+
     const wallet = await loadWallet();
     if (!wallet) return setError("Could not load wallet!");
     const wCoin = wallet.coins.find(c => c.id === id);
     if (!wCoin) return;
-    // if (receiver.length !== 130) {
-    //   setBadAddr(true);
-    //   return;
-    // }
-    const res = await cc.transact(wCoin.privateKey, id, receiver);
 
+    const res = await cc.transact(wCoin.privateKey, id, receiver);
     if (res) return setError(res);
-    
+
     const i = wallet.coins.findIndex(c => c === wCoin);
     wallet.coins.splice(i, 1);
 
-    // Get tx height
     const resH = await cc.getCoin(id);
     if (typeof resH === "string") return setError(resH);
 
@@ -201,6 +199,7 @@ export default function Send() {
     });
     const err = await saveWallet(wallet);
     if (err) return setError(err);
+
     setScanning(false);
     setId(0);
     setReceiver("");
@@ -209,11 +208,10 @@ export default function Send() {
     router.replace("/(tabs)");
   }
 
-  if (invalidSession) return <Alert onlyOk title="Logged Out" message="You have been logged out. This could have happened, because you logged in from a diffrent location. Please log in again." onResolved={() => router.replace("/login")} />
-  if (error) return <Alert onlyOk title="An Error Occured" message={error} onResolved={() => router.replace("/(tabs)")} />
+  if (invalidSession) return <Alert onlyOk title="Logged Out" message="You have been logged out. This could have happened, because you logged in from a different location. Please log in again." onResolved={() => router.replace("/login")} />
+  if (error) return <Alert onlyOk title="An Error Occurred" message={error} onResolved={() => router.replace("/(tabs)")} />
   if (notEnoughFunds) return <Alert onlyOk title="Not Enough Funds" message="Sorry, you do not have enough unlocked funds to complete this transaction." onResolved={() => setNotEnoughFunds(false)} />
   if (badAddr) return <Alert onlyOk title="Warning" message="The receiver address you provided is invalid." onResolved={() => setBadAddr(false)} />
-
 
   if (!ready) return (
     <ScrollView style={{ flex: 1 }}>
@@ -222,7 +220,27 @@ export default function Send() {
     </ScrollView>
   );
 
-  if (scanning && camPermission) {
+  if (scanning) {
+    if (Platform.OS === "web") {
+      return (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <Texts.Large style={{ marginBottom: 10 }}>Scan QR Code</Texts.Large>
+          <View id="reader" style={{ width: "100%", maxWidth: 500 }}></View>
+          <TouchableOpacity
+            style={{
+              marginTop: 20,
+              backgroundColor: Colors.primaryDark,
+              padding: 10,
+              borderRadius: Standards.borderRadius
+            }}
+            onPress={() => setScanning(false)}
+          >
+            <Texts.Regular style={{ color: "white" }}>Cancel</Texts.Regular>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
     return (
       <View style={{ flex: 1 }}>
         <TouchableOpacity
@@ -238,12 +256,12 @@ export default function Send() {
           }}
           onPress={() => Clipboard.setStringAsync(id + "")}
         >
-          <Texts.Regular style={{ color: 'white', fontSize: 18 }}>TX <Texts.Regular style={{ color: Colors.primary }}>#{id}</Texts.Regular></Texts.Regular>
+          <Texts.Regular style={{ color: 'white', fontSize: 18 }}>
+            TX <Texts.Regular style={{ color: Colors.primary }}>#{id}</Texts.Regular>
+          </Texts.Regular>
         </TouchableOpacity>
         <CameraView
-          barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
-          }}
+          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
           style={{ ...StyleSheet.absoluteFillObject, flex: 1 }}
           onBarcodeScanned={result => {
             setReceiver(result.data);
@@ -265,7 +283,7 @@ export default function Send() {
           <Texts.Regular style={{ color: 'white', fontSize: 18 }}>Cancel</Texts.Regular>
         </TouchableOpacity>
       </View>
-    )
+    );
   }
 
   if (id) {
@@ -278,18 +296,16 @@ export default function Send() {
           <Texts.Medium style={{ marginTop: 20, fontWeight: 700 }}>Receiver's Address</Texts.Medium>
           <View style={styles.addressGroup}>
             <TextInput style={styles.receiver} placeholder="Receiver's address" placeholderTextColor={Colors.textLight} value={receiver} onChangeText={r => setReceiver(r)} maxLength={150} />
-            {(camPermission && Platform.OS === "web") ||
-              <TouchableOpacity onPress={() => setScanning(true)}>
-                <Icon size={40} name="barcode-outline"></Icon>
-              </TouchableOpacity>
-            }
+            <TouchableOpacity onPress={() => setScanning(true)}>
+              <Ionicons size={40} name="barcode-outline" />
+            </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.prepareButton} onPress={send}>
             <Texts.Regular style={styles.buttonText}>Send</Texts.Regular>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    )
+    );
   }
 
   return (
@@ -298,7 +314,7 @@ export default function Send() {
       <View style={styles.all}>
         <Texts.Large>Send <Texts.Large style={{ color: Colors.primary, fontWeight: 700 }}>CLCs</Texts.Large></Texts.Large>
         <Texts.Medium style={{ marginTop: 20, fontWeight: 700 }}>Transaction Amount</Texts.Medium>
-        <TextInput keyboardType="decimal-pad" style={styles.amount} placeholder="0 CLC" placeholderTextColor={Colors.textLight} value={amount ? amount : ""} onChangeText={num => setAmount(num)} />
+        <TextInput keyboardType="decimal-pad" style={styles.amount} placeholder="0 CLC" placeholderTextColor={Colors.textLight} value={amount ?? ""} onChangeText={num => setAmount(num)} />
         <TouchableOpacity style={styles.prepareButton} onPress={splitCoins}>
           <Texts.Regular style={styles.buttonText}>Split Coins</Texts.Regular>
         </TouchableOpacity>

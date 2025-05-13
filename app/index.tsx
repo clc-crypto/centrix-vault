@@ -5,44 +5,69 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function Index() {
   const styles = StyleSheet.create({
-    all: {
-      padding: 15
+    container: {
+      flex: 1,
+      backgroundColor: "#fff",
     },
-    allHolder: {
+    all: {
+      alignItems: "center",
       display: "flex",
-      alignItems: "center"
+      gap: 30,
+      marginVertical: 100,
+    },
+    content: {
+      padding: 20,
+    },
+    heading: {
+      marginBottom: 20,
+      textAlign: "center",
+      maxWidth: 500,
+    },
+    description: {
+      marginBottom: 40,
+      lineHeight: 22,
+      textAlign: "center",
+      color: Colors.textLight,
+      maxWidth: 500,
     },
     button: {
-      width: "80%",
-      paddingVertical: 10,
-      paddingHorizontal: 20,
+      width: "90%",
+      paddingVertical: 14,
       marginVertical: 10,
       backgroundColor: Colors.primary,
       borderRadius: Standards.borderRadius,
-      display: "flex",
-      alignItems: "center"
-    }
+      alignItems: "center",
+      maxWidth: 500,
+    },
+    buttonText: {
+      color: "#fff",
+      fontSize: 16,
+      maxWidth: 500,
+    },
+    secondaryText: {
+      marginTop: 30,
+      marginBottom: 8,
+      color: Colors.textLight,
+      maxWidth: 500,
+    },
   });
 
   return (
-    <ScrollView style={styles.all}>
-      <View style={styles.allHolder}>
-        <Texts.Heading>Centrix Vault</Texts.Heading>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.all}>
+        <Texts.Heading style={styles.heading}>Centrix Vault</Texts.Heading>
 
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/(tabs)")}>
-          <Texts.Regular style={{ color: "#fff" }}>Open Wallet</Texts.Regular>
-        </TouchableOpacity>
+        <Texts.Medium style={styles.description}>
+          Centrix Vault is the new official wallet for Centrix. Packed with brand new features like QR code scanning to make sending CLC easier, and many more quality of life changes.
+        </Texts.Medium>
 
-        <Texts.Regular style={{ color: Colors.textLight }}>Don't have a wallet yet?</Texts.Regular>
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/register")}>
-          <Texts.Regular style={{ color: "#fff" }}>Create a new Wallet</Texts.Regular>
-        </TouchableOpacity>
-
-        <Texts.Regular style={{ color: Colors.textLight }}>Or log out now</Texts.Regular>
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/logout")}>
-          <Texts.Regular style={{ color: "#fff" }}>Logout</Texts.Regular>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push("/(tabs)")}
+        >
+          <Texts.Regular style={styles.buttonText}>Open Wallet</Texts.Regular>
         </TouchableOpacity>
       </View>
     </ScrollView>
-  )
+  );
 }

@@ -212,6 +212,10 @@ export default function Login() {
         <TouchableOpacity style={styles.button} onPress={login}>
           <Text style={styles.buttonText}>Log in</Text>
         </TouchableOpacity>
+        <Texts.Small style={{ textAlign: "center", marginVertical: 20 }}>No account yet?</Texts.Small>
+        <TouchableOpacity onPress={() => router.replace("/register")}>
+          <Texts.Medium style={{ textAlign: "center" }}>Register Now</Texts.Medium>
+        </TouchableOpacity>
         <Texts.Regular style={{ color: Colors.danger }}>{error}</Texts.Regular>
       </View>
     </ImageBackground>
